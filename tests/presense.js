@@ -6,6 +6,7 @@ let isOn = false;
 
 module.exports = (users) => {
     const t0 = _.now();
+    console.log('[presence] testing presence');
     return asyncq.each(users, (user, index, arr) => {
         return asyncq.series([
             () => amOnline(user),
@@ -15,6 +16,7 @@ module.exports = (users) => {
         });
     }).then(r => {
         now = _.now();
+        console.log('[presence] done')
         return {
             test: 'presense',
             started: t0,
@@ -25,6 +27,7 @@ module.exports = (users) => {
 }
 
 const amOnline = (user) => {
+    // console.log('[presence] amOnline');
     const amOnlineRef = firebase.database().ref('.info/connected');
     const presenceRef = firebase.database().ref('presence/' + user.id);
     return amOnlineRef.once('value').then((snapshot) => {
@@ -41,6 +44,7 @@ const amOnline = (user) => {
 }
 
 const listenOnUserGroups = (user) => {
+    // console.log('[presence] listenOnUserGroups');
     const presenceRef = firebase.database().ref('presence/' + user.id);
     return firebase.database().ref(`/users/${user.id}/groups`)
         .once('child_added')

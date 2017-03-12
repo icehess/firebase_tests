@@ -2,7 +2,7 @@ var firebase = require('firebase');
 var asyncq = require('async-q');
 var _ = require('lodash');
 
-const MAX_MESSAGE_SEND = 20;
+const MAX_MESSAGE_SEND = 10;
 
 let messageRefs = [];
 let isListening = false;
@@ -10,6 +10,7 @@ let isListening = false;
 
 module.exports = (users) => {
     const t0 = _.now();
+    console.log(`[fanout] sending ${MAX_MESSAGE_SEND} to ${users.length} users`)
     return asyncq.series([
         () => listenOnMessages(users),
         () => clientFanOut(users, MAX_MESSAGE_SEND),
@@ -33,6 +34,7 @@ let fanoutStats = {
 
 const listenOnMessages = (users) => {
     const t0 = _.now();
+    console.log('[fanout] listening for messages');
     return asyncq.each(users, (user, index, arr) => {
         return new Promise((resolve, reject) => {
             const uRef = firebase.database().ref(`/messages/${user.id}`);
@@ -48,7 +50,7 @@ const listenOnMessages = (users) => {
                             delivery_elapsed: delivered_at - sent_at,
                             delivered_at: delivered_at
                         };
-                        // console.log(`user ${user.id} recieved ${message_id} at ${_.now()}`);
+                        // console.log(`[fanout] user ${user.id} recieved ${message_id} at ${_.now()}`);
                     }
                     resolve()
                 });
@@ -56,6 +58,7 @@ const listenOnMessages = (users) => {
     }).then((r) => {
         isListening = true;
         now = _.now();
+        console.log('[fanout] finished listening on messages');
         return {
             type: 'listen',
             elapsed: now - t0
@@ -64,10 +67,12 @@ const listenOnMessages = (users) => {
 }
 
 const removeListener = (users) => {
+    console.log('[fanout] remove listeners from messages');
     return new Promise((resolve, reject) => {
         messageRefs.forEach((ref) => {
             ref.off();
         });
+        console.log('[fanout] finished remove listeners');
         resolve({ type: 'remove_listeners' });
     })
 }
@@ -75,6 +80,7 @@ const removeListener = (users) => {
 
 const clientFanOut = (users, count = 1) => {
     fanoutStats.started = _.now();
+    console.log('[fanout] sending messages');
     return asyncq.times(count, () => {
         const message_id = firebase.database().ref().child(`/messages/${users[0].id}/`).push().key;
         fanoutStats.messages[`${message_id}`] = { users: {} };
@@ -89,6 +95,7 @@ const clientFanOut = (users, count = 1) => {
         let updates = {};
         const start_loop_users = _.now();
         users.forEach(u => {
+            // console.log(u.id);
             updates[`/messages/${u.id}/${message_id}`] = message;
         });
         const end_loop_users = _.now();
@@ -97,13 +104,13 @@ const clientFanOut = (users, count = 1) => {
         fanoutStats.messages[`${message_id}`].loop_users_elapsed = end_loop_users - start_loop_users;
         updates[`/pn_worker/${message_id}`] = message;
         const stats_sent_at = _.now();
-        // console.log(`sending message ${message_id} at ${stats_sent_at}`)
+        // console.log(`[fanout] sending message ${message_id} at ${stats_sent_at}`)
         fanoutStats.messages[`${message_id}`].sent_at = stats_sent_at;
         return firebase.database().ref().update(updates).then(() => {
             const delivered = _.now();
             fanoutStats.messages[`${message_id}`].all_delivered = delivered;
             fanoutStats.messages[`${message_id}`].all_delivered_elapsed = delivered - stats_sent_at;
-            // console.log(`message ${message_id} delivered at ${delivered}\n`);
+            // console.log(`[fanout] message ${message_id} delivered at ${delivered}\n`);
         });
     }).then((r) => {
         return {
