@@ -1,16 +1,16 @@
 const firebaseConfig = require('./fb_configs.js');
-var firebase = require('firebase');
-var asyncq = require('async-q');
-var initializeDb = require('./tests/initializeDb.js');
-var presenseTest = require('./tests/presense.js');
-var clientFanOutTest = require('./tests/client_fanout.js');
+const firebase = require('firebase');
+const asyncq = require('async-q');
+const initializeDb = require('./tests/initializeDb.js');
+const presenseTest = require('./tests/presense.js');
+const clientFanOutTest = require('./tests/client_fanout.js');
+const fbFunctionFanout = require('./tests/function_fanout.js');
 
-
-const MAX_USER = 100;
+const MAX_USER = 10;
 
 const app = firebase.initializeApp(firebaseConfig);
 
-var users = [];
+let users = [];
 for (let i = 0; i < MAX_USER; i++) {
     let user_id = 'user_';
     if (i < 9) {
@@ -26,7 +26,8 @@ for (let i = 0; i < MAX_USER; i++) {
 asyncq.series([
     () => { return initializeDb(users) },
     () => { return presenseTest(users) },
-    () => { return clientFanOutTest(users) }
+    () => { return clientFanOutTest(users) },
+    () => { return fbFunctionFanout(users) }
 ]).then(results => {
     console.log(`\n\n tests results: \n\n ${JSON.stringify(results, null, 2)}`)
 }).done(() => {
