@@ -44,16 +44,16 @@ const listenOnMessages = (users) => {
                 .on('child_added', snapshot => {
                     if (isListening) {
                         const message_id = snapshot.val().id;
-                        // console.log('recieved a message');
-                        // console.log(message_id);
-                        // console.log(fanoutStats.messages);
                         // console.log(`[fb_function_fanout] user ${user.id} recieved ${message_id} at ${_.now()}`);
-                        const sent_at = fanoutStats.messages[`${message_id}`].sent_at
-                        const delivered_at = _.now();
-                        fanoutStats.messages[`${message_id}`].users[`${user.id}`] = {
-                            delivery_elapsed: delivered_at - sent_at,
-                            delivered_at: delivered_at
-                        };
+                        if (fanoutStats.messages[`${message_id}`]) {
+                            // only process the message that this worker was sent
+                            const sent_at = fanoutStats.messages[`${message_id}`].sent_at
+                            const delivered_at = _.now();
+                            fanoutStats.messages[`${message_id}`].users[`${user.id}`] = {
+                                delivery_elapsed: delivered_at - sent_at,
+                                delivered_at: delivered_at
+                            };
+                        }
                     }
                     resolve()
                 });

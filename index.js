@@ -26,7 +26,7 @@ for (let i = 0; i < MAX_USER; i++) {
 asyncq.series([
     () => { return initializeDb(users) },
     () => { return presenseTest(users) },
-    () => { return clientFanOutTest(users) },
+    // () => { return clientFanOutTest(users) },
     () => { return fbFunctionFanout(users) }
 ]).then(results => {
     console.log(`\n\n tests results: \n\n ${JSON.stringify(results, null, 2)}`)
@@ -34,11 +34,3 @@ asyncq.series([
     console.log('\n all tests are done \n');
     app.delete();
 })
-
-// // fan-out (user_01 sends to all)
-// setTimeout(() => {
-//     console.log('\n');
-//     console.log('\n');
-//     console.log('Client fan-out test run');
-//     workers[0].clientFanOut(users, 10);
-// }, 4000);
