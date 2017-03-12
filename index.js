@@ -6,7 +6,7 @@ var presenseTest = require('./tests/presense.js');
 var clientFanOutTest = require('./tests/client_fanout.js');
 
 
-const MAX_USER = 2;
+const MAX_USER = 40;
 
 const app = firebase.initializeApp(firebaseConfig);
 
