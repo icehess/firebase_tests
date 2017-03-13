@@ -5,3 +5,5 @@ npm-debug.log
 fb_configs.js
 fb_functions/.firebaserc
 fb_functions/database.rules.json
+
+results_*.json
