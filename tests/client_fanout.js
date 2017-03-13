@@ -81,7 +81,7 @@ const removeListener = () => {
             messageRefs.forEach((ref) => {
                 ref.off();
             });
-            console.log('[fanout] finished remove listeners');
+            console.log('[fanout] finished remove listeners\n');
             resolve({
                 type: 'remove_listeners'
             });
@@ -94,7 +94,7 @@ const clientFanOut = (users, count = 1) => {
     message_status.started = _.now();
     console.log('[fanout] sending messages');
     return asyncq.times(count, () => {
-        doSendMessage(users);
+        return doSendMessage(users);
     }).then((r) => {
         return {
             type: 'fanout',

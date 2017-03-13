@@ -81,7 +81,7 @@ const removeListener = () => {
             messageRefs.forEach((ref) => {
                 ref.off();
             });
-            console.log('[fb_function_fanout] finished remove listeners');
+            console.log('[fb_function_fanout] finished remove listeners\n');
             resolve({
                 test: 'remove_listeners',
             })
@@ -94,7 +94,7 @@ const sendMessages = (users, count = 1) => {
     message_status.started = _.now();
     console.log('[fb_function_fanout] sending messages');
     return asyncq.times(count, () => {
-        doSendMessage(users[0]);
+        return doSendMessage(users[0]);
     }).then((r) => {
         return {
             type: 'send_message_cloud_functions',

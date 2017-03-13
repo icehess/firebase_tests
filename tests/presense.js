@@ -16,7 +16,7 @@ module.exports = (users) => {
         });
     }).then(r => {
         now = _.now();
-        console.log('[presence] done')
+        console.log('[presence] done\n')
         return {
             test: 'presense',
             started: t0,
